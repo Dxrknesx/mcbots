@@ -7,7 +7,7 @@ Mineflayer-AFK-Bots für Premium-Accounts (Microsoft-Login), als systemd-Service
 Voraussetzungen: Node.js 18+, npm, git
 
 ```bash
-git clone https://github.com/<user>/<repo>.git /opt/mcbot
+git clone https://github.com/Dxrknesx/mcbots.git /opt/mcbot
 cd /opt/mcbot
 sudo bash install.sh
 mcbots config          # host + Account-Mails eintragen
