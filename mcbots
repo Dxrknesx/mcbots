@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Steuerbefehl fuer den mcbots-Service
+DIR="__DIR__"
+SVC="mcbots.service"
+
+sc() { if [ "$EUID" -ne 0 ]; then sudo systemctl "$@"; else systemctl "$@"; fi; }
+
+case "${1:-}" in
+  start)   sc start "$SVC" && echo "Bots gestartet" ;;
+  stop)    sc stop "$SVC" && echo "Bots gestoppt" ;;
+  restart) sc restart "$SVC" && echo "Bots neu gestartet" ;;
+  status)  systemctl status "$SVC" --no-pager ;;
+  logs)    journalctl -u "$SVC" -f -n "${2:-50}" ;;
+  enable)  sc enable "$SVC" && echo "Autostart beim Boot: an" ;;
+  disable) sc disable "$SVC" && echo "Autostart beim Boot: aus" ;;
+  config)  ${EDITOR:-nano} "$DIR/config.json" && echo "Gespeichert. Uebernehmen mit: mcbots restart" ;;
+  update)  cd "$DIR" && git pull && npm install && sc restart "$SVC" && echo "Aktualisiert und neu gestartet" ;;
+  *) cat <<USAGE
+Nutzung: mcbots <befehl>
+  start      Bots starten
+  stop       Bots stoppen
+  restart    Neu starten (nach Config-Aenderung)
+  status     Status anzeigen
+  logs [n]   Live-Log (letzte n Zeilen, Standard 50)
+  enable     Autostart beim Systemstart an
+  disable    Autostart aus
+  config     config.json bearbeiten
+  update     Neueste Version von GitHub holen und neu starten
+USAGE
+  ;;
+esac

@@ -1,0 +1,22 @@
+{
+  "host": "dein.server.net",
+  "port": 25565,
+  "version": false,
+  "joinDelayMs": 5000,
+  "joinCommandDelayMs": 5000,
+  "reconnect": true,
+  "reconnectDelayMs": 10000,
+  "humanize": {
+    "enabled": true,
+    "reconnectMinMs": 300000,
+    "reconnectMaxMs": 600000
+  },
+  "antiAfkIntervalMs": 20000,
+  "logChat": false,
+  "debug": false,
+  "debugPackets": false,
+  "statusIntervalMs": 30000,
+  "accounts": [
+    { "username": "deine-microsoft-mail@example.com", "joinCommand": "/afk" }
+  ]
+}
