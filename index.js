@@ -59,6 +59,13 @@ function startBot(acc) {
   if (config.version) opts.version = config.version
 
   const bot = mineflayer.createBot(opts)
+  // mineflayer 4.39 schickt die Ressourcenpaket-UUID als Objekt -> landet als 0000... beim Server,
+  // der wartet dann ewig auf die Antwort fuer sein Paket und der Bot kommt nie an. Als String senden.
+  const rawWrite = bot._client.write.bind(bot._client)
+  bot._client.write = (packetName, params) => {
+    if (packetName === 'resource_pack_receive' && params?.uuid && typeof params.uuid !== 'string') params = { ...params, uuid: params.uuid.toString() }
+    return rawWrite(packetName, params)
+  }
   bots.set(name, bot)
   let antiAfk = null
   let spawnTimeout = null
