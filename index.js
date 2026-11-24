@@ -39,6 +39,14 @@ function reconnectDelay() {
   return Math.floor(min + Math.random() * (max - min))
 }
 
+// shortcut: minecraft-data (<=3.119) hat im player_info-Paket die Bits update_hat/update_list_order vertauscht.
+// Dadurch verrutscht das Lesen, der Bot fliegt mit "array size is abnormally large" raus. Entfernen, sobald upstream gefixt.
+function fixPlayerInfoFlags(version) {
+  const flags = require('minecraft-data')(version)?.protocol?.play?.toClient?.types?.packet_player_info?.[1]?.[0]?.type?.[1]?.flags
+  const i = flags?.indexOf('update_hat') ?? -1
+  if (i >= 0 && flags[i + 1] === 'update_list_order') [flags[i], flags[i + 1]] = [flags[i + 1], flags[i]]
+}
+
 function formatDuration(ms) {
   const s = Math.round(ms / 1000)
   return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`
@@ -59,6 +67,8 @@ function startBot(acc) {
   if (config.version) opts.version = config.version
 
   const bot = mineflayer.createBot(opts)
+  // Muss vor dem Kompilieren des Play-Protokolls laufen; bei version:false steht die Version erst nach dem Ping fest
+  bot._client.once('connect', () => fixPlayerInfoFlags(bot._client.version))
   // mineflayer 4.39 schickt die Ressourcenpaket-UUID als Objekt -> landet als 0000... beim Server,
   // der wartet dann ewig auf die Antwort fuer sein Paket und der Bot kommt nie an. Als String senden.
   const rawWrite = bot._client.write.bind(bot._client)
