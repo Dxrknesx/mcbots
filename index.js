@@ -88,15 +88,6 @@ function startBot(acc) {
         log(name, `[debug] <- ${lastPacket} (erstes Mal)`)
       }
       if (/disconnect/.test(meta.name)) log(name, `[debug] Disconnect-Paket: ${reasonText(data.reason)}`)
-
-      // Ressourcenpaket in der Configuration-Phase (Proxy/Server-Pack) - ohne Antwort haengt der Bot dort fest
-      if (meta.state === 'configuration' && meta.name === 'add_resource_pack') {
-        log(name, `[debug] Server verlangt Ressourcenpaket (${data.url}) - bestaetige`)
-        try {
-          client.write('resource_pack_receive', { uuid: data.uuid, result: 3 }) // accepted
-          client.write('resource_pack_receive', { uuid: data.uuid, result: 0 }) // successfully loaded
-        } catch (err) { log(name, `[debug] Ressourcenpaket-Antwort fehlgeschlagen: ${err.message}`) }
-      }
     })
 
     // Ausgehende Pakete ausserhalb von Play loggen
@@ -115,8 +106,10 @@ function startBot(acc) {
     }, config.statusIntervalMs || 30000)
   }
 
-  // Ressourcenpaket in der Play-Phase immer annehmen
+  // Ressourcenpaket immer annehmen. In der Configuration-Phase antwortet mineflayer selbst -
+  // eine zweite Antwort dort bricht den Config-Task des Servers ab und der Bot kommt nie an.
   bot.on('resourcePack', (url) => {
+    if (bot._client.state === 'configuration') return log(name, `Ressourcenpaket angefragt (${url}) - automatisch akzeptiert`)
     log(name, `Ressourcenpaket angefragt (${url}) - akzeptiere`)
     bot.acceptResourcePack()
   })
