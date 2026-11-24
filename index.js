@@ -2,6 +2,10 @@ const mineflayer = require('mineflayer')
 const fs = require('fs')
 const path = require('path')
 
+// Mojang-Join und Serververbindung muessen von derselben IP kommen (Velocity prevent-client-proxy-connections),
+// sonst Kick "not logged into your Minecraft account". Auf Dual-Stack-Hosts lief der Join sonst ueber IPv6.
+require('dns').setDefaultResultOrder('ipv4first')
+
 const configPath = path.join(__dirname, process.argv[2] || 'config.json')
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'))
 
